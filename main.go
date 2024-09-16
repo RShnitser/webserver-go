@@ -12,7 +12,7 @@ func main(){
 		Handler: mux,
 		Addr: ":" + port,
 	}
-
+	mux.Handle("/", http.FileServer(http.Dir(".")))
 	fmt.Printf("Starting server on port %s\n", port)
 	err := server.ListenAndServe()
 	if err != nil{
