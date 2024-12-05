@@ -10,30 +10,21 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 }
 
-func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cfg.fileserverHits.Add(1)
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (cfg *apiConfig) handleWriteHits(w http.ResponseWriter, r *http.Request){
-	w.Header().Add("Content-Type", " text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())))
-}
-
 func main(){
 	filePathRoot := "."
 	port := "8080"
-
-	cfg := apiConfig{}
+	
+	cfg := apiConfig{
+		fileserverHits: atomic.Int32{},
+	}
+	
+	fsHandler := cfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot))))
 
 	mux := http.NewServeMux()
-	mux.Handle("/app/", cfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot)))))
-	mux.HandleFunc("/healthz", handleReadiness)
-	mux.HandleFunc("/metrics", cfg.handleWriteHits)
-	mux.HandleFunc("/reset", cfg.handleReset)
+	mux.Handle("/app/", fsHandler)
+	mux.HandleFunc("GET /healthz", handleReadiness)
+	mux.HandleFunc("GET /metrics", cfg.handleWriteHits)
+	mux.HandleFunc("POST /reset", cfg.handleReset)
 	
 	server := http.Server{
 		Handler: mux,
