@@ -23,17 +23,6 @@ func (cfg *apiConfig) handleWriteHits(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())))
 }
 
-func (cfg *apiConfig) handleReset(w http.ResponseWriter, r *http.Request){
-	cfg.fileserverHits.Store(0)
-}
-
-
-func handleReadiness(w http.ResponseWriter, r *http.Request){
-	w.Header().Add("Content-Type", " text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(http.StatusText(http.StatusOK)))
-}
-
 func main(){
 	filePathRoot := "."
 	port := "8080"
