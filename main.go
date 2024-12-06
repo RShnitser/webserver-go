@@ -23,8 +23,8 @@ func main(){
 	mux := http.NewServeMux()
 	mux.Handle("/app/", fsHandler)
 	mux.HandleFunc("GET /healthz", handleReadiness)
-	mux.HandleFunc("GET /metrics", cfg.handleWriteHits)
-	mux.HandleFunc("POST /reset", cfg.handleReset)
+	mux.HandleFunc("GET /admin/metrics", cfg.handleWriteHits)
+	mux.HandleFunc("POST /admin/reset", cfg.handleReset)
 	
 	server := http.Server{
 		Handler: mux,
