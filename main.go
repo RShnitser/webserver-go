@@ -26,6 +26,8 @@ func main(){
 	mux.HandleFunc("GET /admin/metrics", cfg.handleWriteHits)
 	mux.HandleFunc("POST /admin/reset", cfg.handleReset)
 	
+	mux.HandleFunc("POST /api/validate_chirp", handleValldatePost)
+	
 	server := http.Server{
 		Handler: mux,
 		Addr: ":" + port,
