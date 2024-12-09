@@ -1,21 +1,34 @@
 package main
 
-import(
-	"fmt"
+import (
 	"net/http"
+	"encoding/json"
 )
 
-func handleValidatePosts(w http.ResponseWriter, r *http.Request){
+func handleValidateChirps(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-        Body string `json:"body"`
-    }
+		Body string `json:"body"`
+	}
+
+	type returnVals struct {
+		Valid bool `json:"valid"`
+	}
 
 	decoder := json.NewDecoder(r.Body)
-    params := parameters{}
-    err := decoder.Decode(&params)
-    if err != nil {
-       
-		w.WriteHeader(500)
-		w.Write([]byte(fmt.Sprintf("Error decoding parameters: %s", err)))
-    }
+	params := parameters{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		return
+	}
+
+	if len(params.Body) > 140 {
+		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+		return
+	}
+
+	respBody := returnVals{
+		Valid: true,
+	}
+	respondWithJSON(w, http.StatusOK, respBody)
 }
