@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"strings"
+	"github.com/google/uuid"
+	"time"
 )
 
 func replaceProfane(input string)string{
@@ -53,4 +55,16 @@ func handleValidateChirps(w http.ResponseWriter, r *http.Request) {
 }
 
 func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		Body string `json:"body"`
+		UserID uuid.UUID `json:"user_id"`
+	}
+
+	type returnVals struct {
+		ID uuid.UUID `json:"id"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+		Body string `json:"body"`
+		UserID uuid.UUID `json:"user_id"`
+	}
 }
