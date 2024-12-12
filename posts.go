@@ -9,6 +9,14 @@ import (
 	"server/internal/database"
 )
 
+type Chirp struct {
+	ID uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Body string `json:"body"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
 func replaceProfane(input string)string{
 	badWords := map[string]struct{}{
 		"kerfuffle":{},
@@ -61,14 +69,6 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		UserID uuid.UUID `json:"user_id"`
 	}
 
-	type returnVals struct {
-		ID uuid.UUID `json:"id"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-		Body string `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)
@@ -88,7 +88,7 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respBody := returnVals{
+	respBody := Chirp{
 		ID: chirp.ID,
 		CreatedAt: chirp.CreatedAt,
 		UpdatedAt: chirp.UpdatedAt,
@@ -96,4 +96,26 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		UserID: chirp.UserID,
 	}
 	respondWithJSON(w, http.StatusCreated, respBody)
+}
+
+func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) {
+	
+	chirps, err := cfg.db.ListChrips(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
+		return
+	}
+
+	respBody := []Chirp{}
+	for _, chirp := range chirps{
+		respBody = append(respBody, Chirp{
+			ID: chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body: chirp.Body,
+			UserID: chirp.UserID,
+		})
+	}
+	respondWithJSON(w, http.StatusOK, respBody)
+
 }
