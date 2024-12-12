@@ -51,3 +51,6 @@ func handleValidateChirps(w http.ResponseWriter, r *http.Request) {
 	}
 	respondWithJSON(w, http.StatusOK, respBody)
 }
+
+func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
+}
