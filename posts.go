@@ -89,11 +89,11 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respBody := returnVals{
-		ID: user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Body: chrip.Body,
-		UserID: chirp.UserID
+		ID: chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body: chirp.Body,
+		UserID: chirp.UserID,
 	}
 	respondWithJSON(w, http.StatusCreated, respBody)
 }
