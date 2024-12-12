@@ -6,6 +6,7 @@ import (
 	"strings"
 	"github.com/google/uuid"
 	"time"
+	"server/internal/database"
 )
 
 func replaceProfane(input string)string{
@@ -67,4 +68,32 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 		UserID uuid.UUID `json:"user_id"`
 	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		return
+	}
+
+	if len(params.Body) > 140 {
+		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+		return
+	}
+
+	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{params.Body, params.UserID})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp", err)
+		return
+	}
+
+	respBody := returnVals{
+		ID: user.ID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		Body: chrip.Body,
+		UserID: chirp.UserID
+	}
+	respondWithJSON(w, http.StatusCreated, respBody)
 }
