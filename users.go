@@ -9,18 +9,18 @@ import(
 	"server/internal/database"
 )
 
+type User struct {
+	ID uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Email string `json:"email"`
+}
+
 func(cfg *apiConfig) handleAddUser(w http.ResponseWriter, r *http.Request) {
 
 	type parameters struct {
 		Email string `json:"email"`
 		Password string `json:"password"`
-	}
-
-	type returnVals struct {
-		ID uuid.UUID `json:"id"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-		Email string `json:"email"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -43,7 +43,7 @@ func(cfg *apiConfig) handleAddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respBody := returnVals{
+	respBody := User{
 		ID: user.ID,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
