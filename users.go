@@ -5,12 +5,15 @@ import(
 	"github.com/google/uuid"
 	"encoding/json"
 	"time"
+	"server/internal/auth"
+	"server/internal/database"
 )
 
 func(cfg *apiConfig) handleAddUser(w http.ResponseWriter, r *http.Request) {
 
 	type parameters struct {
 		Email string `json:"email"`
+		Password string `json:"password"`
 	}
 
 	type returnVals struct {
@@ -28,7 +31,13 @@ func(cfg *apiConfig) handleAddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := cfg.db.CreateUser(r.Context(), params.Email)
+	hash, err := auth.HashPassword(params.Password)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't hash password", err)
+		return
+	}
+
+	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{params.Email, hash})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create user", err)
 		return
