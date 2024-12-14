@@ -5,6 +5,8 @@ import(
 	"server/internal/auth"
 	"encoding/json"
 	"time"
+	"strconv"
+	"github.com/google/uuid"
 )
 
 func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +45,15 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expiresIn := time.Hour
-	if params.ExpiresInSeconds != nil && params.ExpiresInSeconds < time.Hour{
-		expiresIn = params.ExpiresInSeconds
+	if params.ExpiresInSeconds != nil{
+		parsedSeconds, err := strconv.Atoi(*params.ExpiresInSeconds)
+		if err == nil{
+			newTime := time.Duration(parsedSeconds) * time.Second
+			if newTime < time.Hour{
+				expiresIn = newTime
+			}
+		}
+	
 	}
 
 	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret, expiresIn)
