@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db *database.Queries
 	platform string
+	jwtSecret string
 }
 
 func main() {
@@ -32,6 +33,12 @@ func main() {
 		return
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		fmt.Println("JWT_SECRET must be set")
+		return
+	}
+
 	dbConnection, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		fmt.Printf("Could not connect to database: %s\n", err)
@@ -45,6 +52,7 @@ func main() {
 		fileserverHits: atomic.Int32{},
 		db : database.New(dbConnection),
 		platform: platform,
+		jwtSecret: jwtSecret,
 	}
 
 	fsHandler := cfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot))))

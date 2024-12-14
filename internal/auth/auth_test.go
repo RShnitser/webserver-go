@@ -2,6 +2,8 @@ package auth
 
 import (
 	"testing"
+	"github.com/google/uuid"
+	"time"
 )
 
 func TestCheckPasswordHash(t *testing.T) {
@@ -57,4 +59,27 @@ func TestCheckPasswordHash(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestJWTToken(t *testing.T){
+	id := uuid.New()
+
+	token, err := MakeJWT(id, "secret", time.Second * 100)
+	if err != nil{
+		t.Errorf("MakeJWT() error = %v", err)
+	}
+
+	wantID, err := ValidateJWT(token, "secret")
+	if err != nil{
+		t.Errorf("ValidateJWT() error = %v", err)
+	}
+
+	if id.String() != wantID.String(){
+		t.Errorf("Validation failed")
+	}
+}
+
+func TestGetBearerToken(t *testing.T){
+	w := http.ResponseWriter{}
+	w.Header().Set("Authorization", "Bearer token")
 }
