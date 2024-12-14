@@ -41,13 +41,31 @@ func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp
 	return i, err
 }
 
-const listChrips = `-- name: ListChrips :many
+const getChirp = `-- name: GetChirp :one
+SELECT id, created_at, updated_at, body, user_id FROM chirps
+WHERE id = $1
+`
+
+func (q *Queries) GetChirp(ctx context.Context, id uuid.UUID) (Chirp, error) {
+	row := q.db.QueryRowContext(ctx, getChirp, id)
+	var i Chirp
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Body,
+		&i.UserID,
+	)
+	return i, err
+}
+
+const getChrips = `-- name: GetChrips :many
 SELECT id, created_at, updated_at, body, user_id FROM chirps
 ORDER BY created_at ASC
 `
 
-func (q *Queries) ListChrips(ctx context.Context) ([]Chirp, error) {
-	rows, err := q.db.QueryContext(ctx, listChrips)
+func (q *Queries) GetChrips(ctx context.Context) ([]Chirp, error) {
+	rows, err := q.db.QueryContext(ctx, getChrips)
 	if err != nil {
 		return nil, err
 	}

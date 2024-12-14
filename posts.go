@@ -100,7 +100,7 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 
 func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) {
 	
-	chirps, err := cfg.db.ListChrips(r.Context())
+	chirps, err := cfg.db.GetChrips(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
 		return
@@ -115,6 +115,32 @@ func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) 
 			Body: chirp.Body,
 			UserID: chirp.UserID,
 		})
+	}
+	respondWithJSON(w, http.StatusOK, respBody)
+
+}
+
+func(cfg *apiConfig) handleGetChirpByID(w http.ResponseWriter, r *http.Request) {
+	
+	idString := r.PathValue("chirpID")
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Couldn't parse id", err)
+		return
+	}
+
+	chirp, err := cfg.db.GetChirp(r.Context(), id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Couldn't get chirp", err)
+		return
+	}
+
+	respBody := Chirp{
+		ID: chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body: chirp.Body,
+		UserID: chirp.UserID,
 	}
 	respondWithJSON(w, http.StatusOK, respBody)
 
