@@ -73,6 +73,7 @@ func main() {
 
 	mux.HandleFunc("POST /api/refresh", cfg.handleRefresh)
 
+	mux.HandleFunc("POST /api/revoke", cfg.handleRevoke)
 
 	server := http.Server{
 		Handler: mux,

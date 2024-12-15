@@ -38,14 +38,32 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error){
 		return uuid.Nil, err
 	} 
 	
-	claims, ok := token.Claims.(*jwt.RegisteredClaims);
-	if !ok {
-		return uuid.Nil, fmt.Errorf("Unknown claims type")
+	// claims, ok := token.Claims.(*jwt.RegisteredClaims);
+	// if !ok {
+	// 	return uuid.Nil, fmt.Errorf("Unknown claims type")
+	// }
+
+	// id, err := uuid.Parse(claims.Subject)
+	// if err != nil{
+	// 	return uuid.Nil, err
+	// }
+
+	userIDString, err := token.Claims.GetSubject()
+	if err != nil {
+		return uuid.Nil, err
 	}
 
-	id, err := uuid.Parse(claims.Subject)
-	if err != nil{
+	issuer, err := token.Claims.GetIssuer()
+	if err != nil {
 		return uuid.Nil, err
+	}
+	if issuer != "chirpy" {
+		return uuid.Nil, errors.New("invalid issuer")
+	}
+
+	id, err := uuid.Parse(userIDString)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("invalid user ID: %w", err)
 	}
 
 	return id, nil

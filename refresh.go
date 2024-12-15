@@ -4,6 +4,8 @@ import(
 	"net/http"
 	"server/internal/auth"
 	"time"
+	"errors"
+	//"fmt"
 )
 
 func(cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +23,13 @@ func(cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := cfg.db.GetRefreshToken(r.Context(), token)
 	if err != nil{
 		respondWithError(w, http.StatusUnauthorized, "Invalid Token", err)
+		return
+	}
+
+	//value, _ := refreshToken.RevokedAt.Value()
+	//fmt.Println(refreshToken.RevokedAt.Valid)
+	if refreshToken.RevokedAt.Valid{
+		respondWithError(w, http.StatusUnauthorized, "Token is revoked", errors.New(""))
 		return
 	}
 
