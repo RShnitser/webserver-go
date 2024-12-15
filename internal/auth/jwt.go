@@ -8,6 +8,8 @@ import(
 	"net/http"
 	"strings"
 	"errors"
+	"crypto/rand"
+	"encoding/hex"
 )
 
 func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (string, error){
@@ -28,7 +30,6 @@ func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (str
 
 func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error){
 
-	//claims := jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(tokenSecret), nil
 	})
@@ -62,6 +63,18 @@ func GetBearerToken(headers http.Header) (string, error){
 	}
 
 	return splitAuth[1], nil
+}
+
+func MakeRefreshToken() (string, error){
+	c := 32
+	b := make([]byte, c)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	result := hex.EncodeToString(b)
+	return result, nil
 }
 
 
