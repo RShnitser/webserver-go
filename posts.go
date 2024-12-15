@@ -8,6 +8,7 @@ import (
 	"time"
 	"server/internal/database"
 	"server/internal/auth"
+	"errors"
 )
 
 type Chirp struct {
@@ -36,56 +37,48 @@ func replaceProfane(input string)string{
 	return strings.Join(words, " ")
 }
 
-func handleValidateChirps(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Body string `json:"body"`
+func validateChirp(body string)(string, error) {
+	
+	if len(body) > 140 {
+		return "", errors.New("Chirp is too long")
 	}
 
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err := decoder.Decode(&params)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
-		return
-	}
-
-	if len(params.Body) > 140 {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
-		return
-	}
-
-	respBody := returnVals{
-		CleanedBody: replaceProfane(params.Body),
-	}
-	respondWithJSON(w, http.StatusOK, respBody)
+	result := replaceProfane(body)
+	return result, nil
 }
 
 func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
 	}
 
-	token, err := auth.GetBearerToken()
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil{
+		respondWithError(w, http.StatusUnauthorized, "Missing header", err)
+		return
+	}
+
+	userID, err := auth.ValidateJWT(token, cfg.jwtSecret)
+	if err != nil{
+		respondWithError(w, http.StatusUnauthorized, "Invalid Token", err)
+		return
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
 	}
 
-	if len(params.Body) > 140 {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+	validChirp, err := validateChirp(params.body)
+	if err != nil{
+		respondWithError(w, http.StatusBadRequest, "Invalid chirp", err)
 		return
 	}
 
-	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{params.Body, params.UserID})
+	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{validChirp, userID})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp", err)
 		return
