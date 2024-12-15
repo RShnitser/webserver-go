@@ -72,7 +72,7 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validChirp, err := validateChirp(params.body)
+	validChirp, err := validateChirp(params.Body)
 	if err != nil{
 		respondWithError(w, http.StatusBadRequest, "Invalid chirp", err)
 		return
