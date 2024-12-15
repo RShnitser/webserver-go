@@ -5,7 +5,6 @@ import(
 	"server/internal/auth"
 	"encoding/json"
 	"time"
-	"strconv"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +12,7 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email string `json:"email"`
 		Password string `json:"password"`
-		ExpiresInSeconds *string `json:"expires_in_seconds"`
+		ExpiresInSeconds int `json:"expires_in_seconds"`
 	}
 
 	type returnVals struct {
@@ -45,15 +44,8 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expiresIn := time.Hour
-	if params.ExpiresInSeconds != nil{
-		parsedSeconds, err := strconv.Atoi(*params.ExpiresInSeconds)
-		if err == nil{
-			newTime := time.Duration(parsedSeconds) * time.Second
-			if newTime < time.Hour{
-				expiresIn = newTime
-			}
-		}
-	
+	if params.ExpiresInSeconds > 0 && params.ExpiresInSeconds < 3600{	
+		expiresIn = time.Duration(params.ExpiresInSeconds) * time.Second
 	}
 
 	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret, expiresIn)
