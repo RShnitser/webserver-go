@@ -71,6 +71,9 @@ func main() {
 
 	mux.HandleFunc("POST /api/login", cfg.handleLogin)
 
+	mux.HandleFunc("POST /api/refresh", cfg.handleRefresh)
+
+
 	server := http.Server{
 		Handler: mux,
 		Addr:    ":" + port,
