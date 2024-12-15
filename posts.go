@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"time"
 	"server/internal/database"
+	"server/internal/auth"
 )
 
 type Chirp struct {
@@ -68,6 +69,8 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 		UserID uuid.UUID `json:"user_id"`
 	}
+
+	token, err := auth.GetBearerToken()
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
