@@ -12,7 +12,7 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email string `json:"email"`
 		Password string `json:"password"`
-		ExpiresInSeconds int `json:"expires_in_seconds"`
+		//ExpiresInSeconds int `json:"expires_in_seconds"`
 	}
 
 	type returnVals struct {
@@ -21,6 +21,7 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt time.Time `json:"updated_at"`
 		Email string `json:"email"`
 		Token string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -43,12 +44,12 @@ func(cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expiresIn := time.Hour
-	if params.ExpiresInSeconds > 0 && params.ExpiresInSeconds < 3600{	
-		expiresIn = time.Duration(params.ExpiresInSeconds) * time.Second
-	}
+	// expiresIn := time.Hour
+	// if params.ExpiresInSeconds > 0 && params.ExpiresInSeconds < 3600{	
+	// 	expiresIn = time.Duration(params.ExpiresInSeconds) * time.Second
+	// }
 
-	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret, expiresIn)
+	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret, time.Hour)
 	if err != nil{
 		respondWithError(w, http.StatusInternalServerError, "Could not create token", err)
 		return
