@@ -6,10 +6,11 @@ import (
 	"github.com/google/uuid"
 	"database/sql"
 	"errors"
+	"server/internal/auth"
 )
 
 func (cfg *apiConfig) handleUpgrade(w http.ResponseWriter, r *http.Request) {
-	
+
 	type parameters struct {
 		Event string `json:"event"`
 		Data  struct {
@@ -17,9 +18,20 @@ func (cfg *apiConfig) handleUpgrade(w http.ResponseWriter, r *http.Request) {
 		} `json:"data"`
 	}
 
+	key, err := auth.GetAPIKey(r.Header)
+	if err != nil{
+		respondWithError(w, http.StatusUnauthorized, "Missing header", err)
+		return
+	}
+
+	if cfg.polkaKey != key{
+		respondWithError(w, http.StatusUnauthorized, "invalid polka key", err)
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
