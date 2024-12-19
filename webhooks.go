@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/google/uuid"
+	"database/sql"
+	"errors"
 )
 
 func (cfg *apiConfig) handleUpgrade(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +38,11 @@ func (cfg *apiConfig) handleUpgrade(w http.ResponseWriter, r *http.Request) {
 
 	_, err = cfg.db.UpdateChirpyRed(r.Context(), id)
 	if err != nil{
-		respondWithError(w, http.StatusNotFound, "Could not find user", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, "Could not find user", err)
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, "Could not update user", err)
 		return
 	}
 
