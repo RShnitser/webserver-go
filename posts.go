@@ -95,13 +95,30 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 }
 
 func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) {
-	
-	chirps, err := cfg.db.GetChrips(r.Context())
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
-		return
-	}
 
+	authorString := r.URL.Query().Get("author_id")
+	var chirps []database.Chirp
+	var err error
+	if authorString != ""{
+		id, err := uuid.Parse(authorString)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Couldn't parse id", err)
+			return
+		}
+
+		chirps, err = cfg.db.GetChripsByAuthor(r.Context(), id)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
+			return
+		}
+	}else{
+		chirps, err = cfg.db.GetChrips(r.Context())
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Couldn't get chirps", err)
+			return
+		}
+	}
+	
 	respBody := []Chirp{}
 	for _, chirp := range chirps{
 		respBody = append(respBody, Chirp{
