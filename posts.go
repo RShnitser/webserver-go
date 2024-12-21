@@ -97,8 +97,15 @@ func(cfg *apiConfig) handleAddChip(w http.ResponseWriter, r *http.Request) {
 func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) {
 
 	authorString := r.URL.Query().Get("author_id")
+	sortString := r.URL.Query().Get("sort")
+
 	var chirps []database.Chirp
 	var err error
+	sortAsc := true
+	if sortString == "desc"{
+		sortAsc = false
+	}
+
 	if authorString != ""{
 		id, err := uuid.Parse(authorString)
 		if err != nil {
@@ -118,16 +125,30 @@ func(cfg *apiConfig) handleGetAllChirps(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
-	
+
+
+
 	respBody := []Chirp{}
-	for _, chirp := range chirps{
-		respBody = append(respBody, Chirp{
-			ID: chirp.ID,
-			CreatedAt: chirp.CreatedAt,
-			UpdatedAt: chirp.UpdatedAt,
-			Body: chirp.Body,
-			UserID: chirp.UserID,
-		})
+	if sortAsc{
+		for _, chirp := range chirps{
+			respBody = append(respBody, Chirp{
+				ID: chirp.ID,
+				CreatedAt: chirp.CreatedAt,
+				UpdatedAt: chirp.UpdatedAt,
+				Body: chirp.Body,
+				UserID: chirp.UserID,
+			})
+		}
+	}else{
+		for i := len(chirps) - 1; i >= 0; i-=1{
+			respBody = append(respBody, Chirp{
+				ID: chirps[i].ID,
+				CreatedAt: chirps[i].CreatedAt,
+				UpdatedAt: chirps[i].UpdatedAt,
+				Body: chirps[i].Body,
+				UserID: chirps[i].UserID,
+			})
+		}
 	}
 	respondWithJSON(w, http.StatusOK, respBody)
 
