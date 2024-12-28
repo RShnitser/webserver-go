@@ -93,3 +93,25 @@ Response Body:
 }
 ```
 
+### GET /api/chirps
+
+Response Body:
+
+```json
+[
+  {
+    "id": "94b7e44c-3604-42e3-bef7-ebfcc3efff8f",
+    "created_at": "2021-01-01T00:00:00Z",
+    "updated_at": "2021-01-01T00:00:00Z",
+    "body": "Yo fam this feast is lit ong",
+    "user_id": "123e4567-e89b-12d3-a456-426614174000"
+  },
+  {
+    "id": "f0f87ec2-a8b5-48cc-b66a-a85ce7c7b862",
+    "created_at": "2022-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z",
+    "body": "What's good king?",
+    "user_id": "123e4567-e89b-12d3-a456-426614174000"
+  }
+]
+```
