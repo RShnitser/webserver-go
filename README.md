@@ -129,3 +129,5 @@ Response Body:
     "user_id": "123e4567-e89b-12d3-a456-426614174000"
   }
 ```
+ 
+### GET /api/chirps/{chirpID}
